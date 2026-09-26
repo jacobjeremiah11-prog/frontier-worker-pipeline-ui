@@ -1,4 +1,5 @@
 import { Sandbox } from "@vercel/sandbox";
+import { getVercelOidcToken } from "@vercel/oidc";
 
 const NAME = "project-light-agent";
 const ROOT = "/vercel/sandbox/project-light-agent";
@@ -95,8 +96,8 @@ Rules:
       });
     }
 
-    const oidc = process.env.VERCEL_OIDC_TOKEN;
-    if (!oidc) throw new Error("VERCEL_OIDC_TOKEN unavailable");
+    const oidc = await getVercelOidcToken();
+    if (!oidc) throw new Error("Unable to obtain Vercel OIDC token");
 
     const objective = String(
       req.query?.objective ||
