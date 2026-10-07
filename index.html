@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Project Light — AI War Room</title>
+<style>
+:root{--bg:#080b10;--panel:#10151d;--panel2:#151c26;--line:#263142;--text:#eef4ff;--muted:#8e9bad;--green:#67e8a5;--blue:#78a9ff;--amber:#f5c66b;--red:#ff7f87}
+*{box-sizing:border-box} body{margin:0;background:radial-gradient(circle at 20% 0,#132237 0,#080b10 36%);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh}
+button,input,select,textarea{font:inherit}.shell{max-width:1500px;margin:auto;padding:22px}.top{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:18px}.brand{display:flex;gap:12px;align-items:center}.mark{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,#eef4ff,#657795);box-shadow:0 0 32px #8aa0c055}.brand h1{font-size:18px;margin:0;letter-spacing:.02em}.brand p{margin:2px 0 0;color:var(--muted);font-size:12px}.statusbar{display:flex;gap:8px;flex-wrap:wrap}.pill{font-size:11px;border:1px solid var(--line);padding:7px 9px;border-radius:999px;background:#0e131b;color:var(--muted)}.dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px;background:var(--green)}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px}.panel{background:linear-gradient(180deg,#111720dd,#0d1219ed);border:1px solid var(--line);border-radius:18px;box-shadow:0 15px 50px #0005;overflow:hidden}.panelHead{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}.panelHead h2{font-size:13px;margin:0;text-transform:uppercase;letter-spacing:.12em;color:#cbd6e5}.content{padding:16px}
+.composer{display:grid;grid-template-columns:1fr auto;gap:10px;margin-bottom:14px}.composer textarea{resize:vertical;min-height:76px;background:#0b1017;color:var(--text);border:1px solid var(--line);border-radius:12px;padding:12px;outline:none}.composer textarea:focus{border-color:#57749a}.primary{border:0;border-radius:12px;padding:0 18px;background:#eef4ff;color:#0a0d12;font-weight:700;cursor:pointer}.primary:disabled{opacity:.45;cursor:not-allowed}
+.timeline{display:flex;flex-direction:column;gap:12px;min-height:440px}.empty{border:1px dashed var(--line);border-radius:14px;color:var(--muted);padding:24px;text-align:center;margin-top:40px}.msg{display:grid;grid-template-columns:42px 1fr;gap:11px}.avatar{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;font-weight:800;background:#1b2532;border:1px solid #334258}.msg.grok .avatar{background:#2b1f17;border-color:#5c4938}.msg.codex .avatar{background:#17291f;border-color:#2d5d42}.bubble{background:#0b1017;border:1px solid var(--line);border-radius:14px;padding:12px 14px}.meta{display:flex;justify-content:space-between;gap:10px;margin-bottom:7px}.meta strong{font-size:13px}.meta span{font-size:11px;color:var(--muted)}.body{white-space:pre-wrap;line-height:1.5;font-size:14px;color:#dbe5f2}
+.agentCard,.pluginCard{border:1px solid var(--line);background:#0b1017;border-radius:13px;padding:12px;margin-bottom:10px}.agentTop,.pluginTop{display:flex;justify-content:space-between;gap:12px}.agentName,.pluginName{font-weight:700;font-size:13px}.sub{font-size:11px;color:var(--muted);margin-top:4px}.badge{font-size:10px;padding:4px 7px;border-radius:999px;border:1px solid var(--line);height:max-content}.online{color:var(--green)}.pending{color:var(--amber)}.pluginActions{margin-top:9px;display:flex;gap:7px}.small{background:#141c27;color:#cdd9e8;border:1px solid var(--line);border-radius:9px;padding:6px 9px;font-size:11px;cursor:pointer}
+.metricGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0 16px}.metric{background:#0b1017;border:1px solid var(--line);border-radius:11px;padding:9px}.metric b{font-size:15px;display:block}.metric span{font-size:10px;color:var(--muted)}.divider{height:1px;background:var(--line);margin:14px 0}.form2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.form2 input,.form2 select{width:100%;background:#0b1017;border:1px solid var(--line);color:var(--text);border-radius:9px;padding:8px;font-size:11px}.form2 .full{grid-column:1/-1}.notice{font-size:11px;color:var(--muted);line-height:1.4}.error{color:var(--red)}
+@media(max-width:900px){.grid{grid-template-columns:1fr}.top{align-items:flex-start;flex-direction:column}.composer{grid-template-columns:1fr}.primary{height:44px}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="top">
+    <div class="brand"><div class="mark"></div><div><h1>PROJECT LIGHT — AI WAR ROOM</h1><p>Multi-model collaboration console</p></div></div>
+    <div class="statusbar">
+      <div class="pill"><span class="dot"></span>Light API lane</div>
+      <div class="pill"><span class="dot"></span>Grok API lane</div>
+      <div class="pill"><span class="dot" style="background:var(--amber)"></span>Codex executor pending</div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <section class="panel">
+      <div class="panelHead"><h2>Working Session</h2><span id="roundLabel" class="pill">No active round</span></div>
+      <div class="content">
+        <div class="composer">
+          <textarea id="objective" placeholder="Give the room an objective. Example: Tear apart this business idea and decide the smallest real-world test we should run."></textarea>
+          <button id="run" class="primary">Run council</button>
+        </div>
+        <div id="timeline" class="timeline">
+          <div class="empty">Enter an objective. Light proposes, Grok attacks the weaknesses, then Light synthesizes the decision. Codex is shown as a separate execution lane until its executor is connected.</div>
+        </div>
+      </div>
+    </section>
+
+    <aside>
+      <section class="panel">
+        <div class="panelHead"><h2>Agents</h2></div>
+        <div class="content">
+          <div class="agentCard"><div class="agentTop"><div><div class="agentName">Light</div><div class="sub">GPT-5.6 Sol · operator / synthesis</div></div><span class="badge online">LIVE</span></div></div>
+          <div class="agentCard"><div class="agentTop"><div><div class="agentName">Grok</div><div class="sub">Grok 4.5 · independent red team</div></div><span class="badge online">LIVE</span></div></div>
+          <div class="agentCard"><div class="agentTop"><div><div class="agentName">Codex</div><div class="sub">Execution worker · sandbox / repo changes</div></div><span class="badge pending">CONNECT NEXT</span></div></div>
+
+          <div class="metricGrid">
+            <div class="metric"><b id="rounds">0</b><span>ROUNDS</span></div>
+            <div class="metric"><b id="calls">0</b><span>MODEL CALLS</span></div>
+            <div class="metric"><b id="tokens">0</b><span>TOKENS</span></div>
+          </div>
+
+          <div class="divider"></div>
+          <div class="panelHead" style="padding:0 0 10px;border:0"><h2>Plugins / MCP</h2></div>
+          <div id="plugins"></div>
+
+          <div class="divider"></div>
+          <div class="form2">
+            <input id="pluginName" placeholder="Plugin name" />
+            <select id="pluginType"><option>MCP</option><option>API</option><option>Webhook</option></select>
+            <input id="pluginEndpoint" class="full" placeholder="https://your-server.example/mcp" />
+            <button id="addPlugin" class="small full">Add connector card</button>
+          </div>
+          <p class="notice">Custom connector metadata is stored only in this browser in v0.1. Credentials are never stored here. Server-side OAuth/MCP execution comes next.</p>
+        </div>
+      </section>
+    </aside>
+  </div>
+</div>
+
+<script>
+const timeline = document.getElementById('timeline');
+const objective = document.getElementById('objective');
+const run = document.getElementById('run');
+const roundLabel = document.getElementById('roundLabel');
+const roundsEl = document.getElementById('rounds');
+const callsEl = document.getElementById('calls');
+const tokensEl = document.getElementById('tokens');
+const pluginsEl = document.getElementById('plugins');
+
+let metrics = JSON.parse(localStorage.getItem('war-room-metrics') || '{"rounds":0,"calls":0,"tokens":0}');
+let customPlugins = JSON.parse(localStorage.getItem('war-room-plugins') || '[]');
+
+const builtins = [
+  {name:'Vercel',type:'Platform',status:'connected',detail:'Deployments, runtime, AI Gateway'},
+  {name:'GitHub',type:'Repo',status:'connected',detail:'Branches, files, PR workflow'},
+  {name:'ChatGPT plugin bridge',type:'Plugin',status:'planned',detail:'Expose War Room actions back to ChatGPT'},
+  {name:'Memco memory',type:'Memory',status:'planned',detail:'External long-term shared memory adapter'}
+];
+
+function esc(s=''){return s.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+function renderMetrics(){roundsEl.textContent=metrics.rounds;callsEl.textContent=metrics.calls;tokensEl.textContent=metrics.tokens}
+function renderPlugins(){
+  const all=[...builtins,...customPlugins];
+  pluginsEl.innerHTML=all.map((p,i)=>`<div class="pluginCard"><div class="pluginTop"><div><div class="pluginName">${esc(p.name)}</div><div class="sub">${esc(p.type)} · ${esc(p.detail||p.endpoint||'')}</div></div><span class="badge ${p.status==='connected'?'online':'pending'}">${esc((p.status||'registered').toUpperCase())}</span></div>${i>=builtins.length?'<div class="pluginActions"><button class="small" onclick="removePlugin('+(i-builtins.length)+')">Remove</button></div>':''}</div>`).join('');
+}
+window.removePlugin=(i)=>{customPlugins.splice(i,1);localStorage.setItem('war-room-plugins',JSON.stringify(customPlugins));renderPlugins()}
+document.getElementById('addPlugin').onclick=()=>{
+ const name=document.getElementById('pluginName').value.trim();
+ const endpoint=document.getElementById('pluginEndpoint').value.trim();
+ const type=document.getElementById('pluginType').value;
+ if(!name||!endpoint)return;
+ customPlugins.push({name,type,endpoint,status:'registered'});
+ localStorage.setItem('war-room-plugins',JSON.stringify(customPlugins));
+ document.getElementById('pluginName').value='';document.getElementById('pluginEndpoint').value='';
+ renderPlugins();
+};
+
+function addMessage(turn){
+  if(timeline.querySelector('.empty'))timeline.innerHTML='';
+  const css=turn.agent.toLowerCase().includes('grok')?'grok':turn.agent.toLowerCase().includes('codex')?'codex':'';
+  const initial=turn.agent.startsWith('G')?'G':turn.agent.startsWith('C')?'C':'L';
+  const el=document.createElement('div');el.className='msg '+css;
+  el.innerHTML=`<div class="avatar">${initial}</div><div class="bubble"><div class="meta"><strong>${esc(turn.agent)}</strong><span>${esc(turn.model||turn.status||'')}</span></div><div class="body">${esc(turn.content||turn.task||'')}</div></div>`;
+  timeline.appendChild(el);el.scrollIntoView({behavior:'smooth',block:'end'});
+}
+
+run.onclick=async()=>{
+ const q=objective.value.trim();if(!q)return;
+ run.disabled=true;run.textContent='Running…';timeline.innerHTML='';
+ roundLabel.textContent='Agents working';
+ addMessage({agent:'You',model:'objective',content:q});
+ try{
+   const r=await fetch('/api/war-room',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({objective:q})});
+   const data=await r.json();
+   if(!r.ok)throw new Error(data.error||'Request failed');
+   data.turns.forEach(addMessage);
+   addMessage({agent:'Codex',status:data.codex.status,content:data.codex.message+'\n\nQueued brief: '+data.codex.task});
+   metrics.rounds+=1;metrics.calls+=data.usage.modelCalls;metrics.tokens+=data.usage.totalTokens;
+   localStorage.setItem('war-room-metrics',JSON.stringify(metrics));renderMetrics();
+   roundLabel.textContent='Round '+metrics.rounds+' complete';
+ }catch(e){
+   addMessage({agent:'System',status:'error',content:e.message});
+   roundLabel.textContent='Round failed';
+ }finally{run.disabled=false;run.textContent='Run council'}
+};
+renderMetrics();renderPlugins();
+</script>
+</body>
+</html>
