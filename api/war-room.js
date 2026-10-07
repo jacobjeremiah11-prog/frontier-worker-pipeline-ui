@@ -30,9 +30,13 @@ async function callModel({ token, model, system, user, maxTokens = 420 }) {
 }
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") return res.status(405).json({ error: "POST required" });
+  const smoke = req.method === "GET" && String(req.query?.smoke || "") === "1";
+  if (req.method !== "POST" && !smoke) return res.status(405).json({ error: "POST required" });
 
-  const objective = String(req.body?.objective || "").trim().slice(0, 6000);
+  const objective = smoke
+    ? "Smoke test: identify one risk in a multi-agent AI dashboard in one short sentence."
+    : String(req.body?.objective || "").trim().slice(0, 6000);
+
   if (!objective) return res.status(400).json({ error: "objective required" });
 
   try {
@@ -42,7 +46,7 @@ export default async function handler(req, res) {
     const light1 = await callModel({
       token,
       model: "openai/gpt-5.6-sol",
-      maxTokens: 480,
+      maxTokens: smoke ? 90 : 480,
       system: `You are Light, Project Light's exacting operating strategist.
 Do not flatter the user's idea. Distinguish a small cash tactic from a scalable business.
 For decisions, identify the attraction, strongest flaw, hidden assumption, ceiling, labor trap, automation implications, and the smallest evidence-producing next step.
@@ -53,7 +57,7 @@ Be concise, concrete, and willing to reject weak ideas.`,
     const grok = await callModel({
       token,
       model: "spacexai/grok-4.5",
-      maxTokens: 480,
+      maxTokens: smoke ? 90 : 480,
       system: `You are Grok in an independent red-team seat.
 You are reviewing another agent's proposed analysis. Attack unsupported assumptions, weak economics, hidden operational labor, technical fantasy, and opportunity cost.
 Do not agree merely to be cooperative. Identify what evidence would falsify the proposal and what should happen next.`,
@@ -63,7 +67,7 @@ Do not agree merely to be cooperative. Identify what evidence would falsify the 
     const synthesis = await callModel({
       token,
       model: "openai/gpt-5.6-sol",
-      maxTokens: 420,
+      maxTokens: smoke ? 90 : 420,
       system: `You are Light closing a multi-model decision round.
 Use the other model's criticism rather than defending your first answer.
 Return a decisive synthesis: what survives, what is rejected, and exactly one bounded next action.
@@ -76,6 +80,7 @@ If the task is build-related, create a short execution brief that a coding agent
 
     return res.status(200).json({
       ok: true,
+      smoke,
       turns: [
         { agent: "Light", model: "GPT-5.6 Sol", content: light1.text },
         { agent: "Grok", model: "Grok 4.5", content: grok.text },
