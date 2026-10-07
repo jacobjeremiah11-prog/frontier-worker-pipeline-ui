@@ -139,7 +139,7 @@ async function main() {
     "- Do not invent evidence.",
     "- Keep the lesson reusable and concise.",
     "- Prefer deterministic tools over future model calls."
-  ].join("\n");
+  ].join("\\n");
 
   const response = await fetch("https://ai-gateway.vercel.sh/v1/chat/completions", {
     method: "POST",
