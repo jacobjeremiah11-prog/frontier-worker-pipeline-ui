@@ -1,5 +1,4 @@
 import { Sandbox } from "@vercel/sandbox";
-import { getVercelOidcToken } from "@vercel/oidc";
 
 const NAME = "project-light-agent";
 const ROOT = "/vercel/sandbox/project-light-agent";
@@ -96,8 +95,8 @@ Rules:
       });
     }
 
-    const oidc = await getVercelOidcToken();
-    if (!oidc) throw new Error("Unable to obtain Vercel OIDC token");
+    const openrouterKey = process.env.OPENROUTER_API_KEY;
+    if (!openrouterKey) throw new Error("OPENROUTER_API_KEY is not set");
 
     const objective = String(
       req.query?.objective ||
@@ -139,16 +138,17 @@ async function main() {
     "- Do not invent evidence.",
     "- Keep the lesson reusable and concise.",
     "- Prefer deterministic tools over future model calls."
-  ].join("\n");
+  ].join("\\n");
 
-  const response = await fetch("https://ai-gateway.vercel.sh/v1/chat/completions", {
+  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
     headers: {
-      Authorization: "Bearer " + process.env.VERCEL_OIDC_TOKEN,
+      Authorization: "Bearer " + process.env.OPENROUTER_API_KEY,
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      model: "google/gemini-3.5-flash-lite",
+      model: "x-ai/grok-4.3",
+      reasoning: { effort: "none" },
       messages: [{ role: "user", content: prompt }],
       temperature: 0.2,
       max_tokens: 220
@@ -156,7 +156,7 @@ async function main() {
   });
 
   if (!response.ok) {
-    throw new Error("AI Gateway " + response.status + ": " + await response.text());
+    throw new Error("OpenRouter " + response.status + ": " + await response.text());
   }
 
   const data = await response.json();
@@ -197,7 +197,7 @@ async function main() {
   console.log(JSON.stringify({
     ok: true,
     cycle: state.cycle,
-    model: "google/gemini-3.5-flash-lite",
+    model: data.model || "x-ai/grok-4.3",
     result,
     usage: data.usage || null,
     totalModelCalls: state.totalModelCalls
@@ -213,7 +213,7 @@ main().catch((error) => {
     const command = await sandbox.runCommand({
       cmd: "node",
       args: ["-e", runner],
-      env: { VERCEL_OIDC_TOKEN: oidc }
+      env: { OPENROUTER_API_KEY: openrouterKey }
     });
 
     const stdout = (await command.stdout()).trim();
